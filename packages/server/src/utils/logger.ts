@@ -11,9 +11,9 @@ const logDir = config.logging.dir
 
 // Create the log directory if it doesn't exist
 
-if (!config.logging.disableLogFiles && !fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir)
-}
+// if (!config.logging.disableLogFiles && !fs.existsSync(logDir)) {
+//     fs.mkdirSync(logDir)
+// }
 
 const logger = createLogger({
     format: combine(
@@ -28,35 +28,7 @@ const logger = createLogger({
     defaultMeta: {
         package: 'server'
     },
-    transports: [
-        new transports.Console(),
-        ...(!config.logging.disableLogFiles
-            ? [
-                  new transports.File({
-                      filename: path.join(logDir, config.logging.server.filename ?? 'server.log'),
-                      level: config.logging.server.level ?? 'info'
-                  }),
-                  new transports.File({
-                      filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log'),
-                      level: 'error' // Log only errors to this file
-                  })
-              ]
-            : [])
-    ],
-    exceptionHandlers: !config.logging.disableLogFiles
-        ? [
-              new transports.File({
-                  filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
-              })
-          ]
-        : [],
-    rejectionHandlers: !config.logging.disableLogFiles
-        ? [
-              new transports.File({
-                  filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
-              })
-          ]
-        : []
+    transports: [new transports.Console()]
 })
 
 /**
@@ -104,10 +76,10 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
         }
 
         if (req.method !== 'GET') {
-            !config.logging.disableLogFiles && fileLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+            fileLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
             logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         } else {
-            !config.logging.disableLogFiles && fileLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+            fileLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         }
     }
 

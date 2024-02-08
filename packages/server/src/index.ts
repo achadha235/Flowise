@@ -145,7 +145,7 @@ export class App {
         this.app.disable('x-powered-by')
 
         // Add the expressRequestLogger middleware to log all requests
-        this.app.use(expressRequestLogger)
+        // this.app.use(expressRequestLogger)
 
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
