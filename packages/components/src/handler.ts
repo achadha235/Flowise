@@ -245,7 +245,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         langSmithField = { ...langSmithField, ...nodeData?.inputs?.analytics?.langSmith }
                     }
 
-                    const tracer = new LangChainTracer(langSmithField)
+                    const tracer = new LangChainTracer(langSmithField as any)
                     callbacks.push(tracer)
                 } else if (provider === 'langFuse') {
                     const release = analytic[provider].release as string

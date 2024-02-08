@@ -1,6 +1,6 @@
 {
-    "name": "flowise",
-    "version": "1.4.12",
+    "name": "@proompter/flowise",
+    "version": "1.4.13",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",

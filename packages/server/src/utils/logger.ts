@@ -1,19 +1,7 @@
-import * as path from 'path'
-import * as fs from 'fs'
-import config from './config' // should be replaced by node-config or similar
 import { createLogger, transports, format } from 'winston'
 import { NextFunction, Request, Response } from 'express'
 
 const { combine, timestamp, printf, errors } = format
-
-// expect the log dir be relative to the projects root
-const logDir = config.logging.dir
-
-// Create the log directory if it doesn't exist
-
-// if (!config.logging.disableLogFiles && !fs.existsSync(logDir)) {
-//     fs.mkdirSync(logDir)
-// }
 
 const logger = createLogger({
     format: combine(
@@ -53,14 +41,7 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
                     headers: req.headers
                 }
             },
-            transports: !config.logging.disableLogFiles
-                ? [
-                      new transports.File({
-                          filename: path.join(logDir, config.logging.express.filename ?? 'server-requests.log.jsonl'),
-                          level: config.logging.express.level ?? 'debug'
-                      })
-                  ]
-                : []
+            transports: [new transports.Console()]
         })
 
         const getRequestEmoji = (method: string) => {
