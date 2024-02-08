@@ -10,7 +10,8 @@ const { combine, timestamp, printf, errors } = format
 const logDir = config.logging.dir
 
 // Create the log directory if it doesn't exist
-if (!fs.existsSync(logDir)) {
+
+if (!config.logging.disableLogFiles && !fs.existsSync(logDir)) {
     fs.mkdirSync(logDir)
 }
 
@@ -29,25 +30,33 @@ const logger = createLogger({
     },
     transports: [
         new transports.Console(),
-        new transports.File({
-            filename: path.join(logDir, config.logging.server.filename ?? 'server.log'),
-            level: config.logging.server.level ?? 'info'
-        }),
-        new transports.File({
-            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log'),
-            level: 'error' // Log only errors to this file
-        })
+        ...(!config.logging.disableLogFiles
+            ? [
+                  new transports.File({
+                      filename: path.join(logDir, config.logging.server.filename ?? 'server.log'),
+                      level: config.logging.server.level ?? 'info'
+                  }),
+                  new transports.File({
+                      filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log'),
+                      level: 'error' // Log only errors to this file
+                  })
+              ]
+            : [])
     ],
-    exceptionHandlers: [
-        new transports.File({
-            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
-        })
-    ],
-    rejectionHandlers: [
-        new transports.File({
-            filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
-        })
-    ]
+    exceptionHandlers: !config.logging.disableLogFiles
+        ? [
+              new transports.File({
+                  filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
+              })
+          ]
+        : [],
+    rejectionHandlers: !config.logging.disableLogFiles
+        ? [
+              new transports.File({
+                  filename: path.join(logDir, config.logging.server.errorFilename ?? 'server-error.log')
+              })
+          ]
+        : []
 })
 
 /**
@@ -72,12 +81,14 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
                     headers: req.headers
                 }
             },
-            transports: [
-                new transports.File({
-                    filename: path.join(logDir, config.logging.express.filename ?? 'server-requests.log.jsonl'),
-                    level: config.logging.express.level ?? 'debug'
-                })
-            ]
+            transports: !config.logging.disableLogFiles
+                ? [
+                      new transports.File({
+                          filename: path.join(logDir, config.logging.express.filename ?? 'server-requests.log.jsonl'),
+                          level: config.logging.express.level ?? 'debug'
+                      })
+                  ]
+                : []
         })
 
         const getRequestEmoji = (method: string) => {
@@ -93,10 +104,10 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
         }
 
         if (req.method !== 'GET') {
-            fileLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+            !config.logging.disableLogFiles && fileLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
             logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         } else {
-            fileLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
+            !config.logging.disableLogFiles && fileLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         }
     }
 
